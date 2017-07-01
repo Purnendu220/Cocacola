@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    >
+    <item
+        android:id="@+id/date"
+        android:title="@string/select_date"
+        android:icon="@mipmap/ic_cal"
+        android:showAsAction="always"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource" />
+    <item
+        android:id="@+id/date_list"
+        android:title="@string/select_date"
+        android:icon="@mipmap/ic_cal_all"
+        android:showAsAction="always"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource" />
+
+</menu>
