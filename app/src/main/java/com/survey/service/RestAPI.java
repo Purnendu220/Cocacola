@@ -2,6 +2,8 @@ package com.survey.service;
 
 
 
+import com.survey.fcm.FcmResponse;
+
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -87,5 +89,9 @@ public interface RestAPI {
     @Headers("Content-Type: text/plain; charset=utf-8")
     @POST(ServiceConstants.GETAllDATES)
     Call<AllDateResponse> getallDates(@Query(ServiceConstants.datevalue) String date_value);
+
+    @Headers("Content-Type: text/plain; charset=utf-8")
+    @POST(ServiceConstants.SAVEFCMID)
+    Call<FcmResponse> savefcmid(@Query(ServiceConstants.fcm_id) String fcm_id, @Query(ServiceConstants.device_id) String device_id, @Query(ServiceConstants.last_name) String last_name);
 }
 

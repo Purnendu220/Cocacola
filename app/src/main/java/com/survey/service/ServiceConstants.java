@@ -8,7 +8,7 @@ public class ServiceConstants {
     public static final String MEMBER_IN_REQUEST ="memberdetail.php" ;
     public static final String GETDATA="getdata.php";
     public static final String GETAllDATES="getalldatesdata.php";
-
+    public static final String SAVEFCMID="savefcm.php";
 
     public static final String family_bussiness="family_bussiness";
     public static final String family_cast="family_cast";
@@ -31,6 +31,9 @@ public class ServiceConstants {
     public static final String mMemberRelationWithOwner="mMemberRelationWithOwner";
     public static final String mMemberSex="mMemberSex";
     public static final String datevalue="date_value";
+
+    public static final String fcm_id="fcm_id";
+    public static final String last_name="last_name";
 
     public interface WebConstants {
 

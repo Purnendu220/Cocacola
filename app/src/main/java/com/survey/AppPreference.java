@@ -15,7 +15,7 @@ public class AppPreference {
     private SharedPreferences mPrefs;
     private Editor mPrefsEditor;
     private static AppPreference INSTANCE;
-
+    private final String TOKENVALUE = "tokenvalue";
 
 
     private AppPreference(Context context) {
@@ -30,7 +30,14 @@ public class AppPreference {
         }
         return INSTANCE;
     }
+    public String getTokenValue() {
+        return mPrefs.getString(TOKENVALUE, "");
+    }
 
+    public void setTokenValue(String token_value) {
+        mPrefsEditor.putString(TOKENVALUE, token_value);
+        mPrefsEditor.commit();
+    }
 public void ClearPRef(){
     mPrefsEditor.clear();
     mPrefsEditor.commit();

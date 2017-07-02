@@ -15,9 +15,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 
+import com.survey.fcm.FabricEventTracker;
 import com.survey.service.AllDateResponse;
 import com.survey.service.DateList;
 import com.survey.service.Datum;
+import com.survey.service.ServiceConstants;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -30,19 +32,29 @@ public class GetListOfDates extends AppCompatActivity implements XlsDateResponse
     private RecyclerView mRVJobListing;
     private XlsPageTableDAO dao;
     private AllDateListAdapter mAdapter;
-    private TextView text_date;
+    private TextView text_date,mTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_list_of_dates);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
+        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("");
+        mTitle = (TextView) mToolbar.findViewById(R.id.toolbar_title);
         mRVJobListing = (RecyclerView) findViewById(R.id.jobListingRV);
         text_date=(TextView)findViewById(R.id.text_date);
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        FontTypeFace.setRobotoThinTypeFace(this,mTitle,text_date);
         getData();
+        FabricEventTracker.getInstance().trackScreen(Constants.FABRIC_EVENTS.SCREEN_ALLDATES);
+
     }
     private void setJobListAdapter(List<DateList> list) {
         ArrayList<Long> mylist=getSortedList(list);
@@ -148,6 +160,8 @@ public class GetListOfDates extends AppCompatActivity implements XlsDateResponse
     public void onSuccess(AllDateResponse list) {
 
         setJobListAdapter(list.getData());
+        FabricEventTracker.getInstance().sendServiceEvent(Constants.FABRIC_EVENTS.EVENT_GET_ALL_DATES, ServiceConstants.GETAllDATES, list.getSize());
+
     }
     private boolean isEmpty(String data){
         if(data.equalsIgnoreCase("0")||data.equalsIgnoreCase("")||data.equalsIgnoreCase("DATEVAL")){
@@ -159,6 +173,7 @@ public class GetListOfDates extends AppCompatActivity implements XlsDateResponse
     }
     @Override
     public void onFailure(String message) {
+        FabricEventTracker.getInstance().sendServiceEvent(Constants.FABRIC_EVENTS.EVENT_GET_ALL_DATES, ServiceConstants.GETAllDATES, message);
 
     }
 

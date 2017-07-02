@@ -4,6 +4,11 @@ import android.app.Application;
 
 import android.database.sqlite.SQLiteDatabase;
 
+import com.crashlytics.android.Crashlytics;
+import com.google.firebase.FirebaseApp;
+
+import io.fabric.sdk.android.Fabric;
+
 
 public class FlowersApp extends Application {
     private static DatabaseHelper mDatabaseHelper;
@@ -13,6 +18,9 @@ public class FlowersApp extends Application {
         final AppContext context = AppContext.getInstance();
         context.setContext(this);
         mDatabaseHelper = DatabaseHelper.getIntance(this);
+        FirebaseApp.initializeApp(this);
+        Fabric.with(this, new Crashlytics());
+        setCrashlyticsUser();
 
     }
 
@@ -42,6 +50,13 @@ public class FlowersApp extends Application {
         // company.
     }
 
+    private void setCrashlyticsUser() {
+        // TODO: Use the current user's information
+        // You can call any combination of these three methods
+        Crashlytics.setUserIdentifier(DeviceUtils.getDeviceID(this));
+        Crashlytics.setUserEmail(DeviceUtils.getUsername(this));
+        Crashlytics.setUserName(DeviceUtils.getDeviceName());
+    }
 
 
 

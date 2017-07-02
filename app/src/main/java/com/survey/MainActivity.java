@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -34,7 +35,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.survey.fcm.FabricEventTracker;
+import com.survey.fcm.RegistrationIntentService;
 import com.survey.service.Datum;
+import com.survey.service.ServiceConstants;
 import com.survey.service.XlsData;
 import com.survey.service.XlsResponse;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
@@ -53,7 +57,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,XlsResponse,DatePickerDialog.OnDateSetListener {
 
     private RecyclerView mRVJobListing;
-    private TextView text_date;
+    private TextView text_date,mTitle;
     private JobListingAdapter mJobListAdapter;
     private Button mDateSelect;
     private String mSelectedDate="";
@@ -64,6 +68,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setTitle("");
+        mTitle = (TextView) mToolbar.findViewById(R.id.toolbar_title);
         mRVJobListing = (RecyclerView) findViewById(R.id.jobListingRV);
         text_date =(TextView) findViewById(R.id.text_date);
         dao=new XlsPageTableDAO(DatabaseHelper.getDatabase());
@@ -71,12 +79,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(extras == null) {
             mSelectedDate=DateUtils.getCurrentDate();
             getData(DateUtils.getNumberOfDays(mSelectedDate)+"");
-
+            FabricEventTracker.getInstance().trackScreen(Constants.FABRIC_EVENTS.SCREEN_MAIN);
         } else {
+            if(extras.getString("date")!=null){
             str= extras.getString("date");
             mSelectedDate=DateUtils.getdateFromnumberofDays(str);
             getData(str);
+                FabricEventTracker.getInstance().trackScreen(Constants.FABRIC_EVENTS.SCREEN_ALLDATES_RESULT);
+            }else{
+                mSelectedDate=DateUtils.getCurrentDate();
+                getData(DateUtils.getNumberOfDays(mSelectedDate)+"");
+                FabricEventTracker.getInstance().trackScreen(Constants.FABRIC_EVENTS.SCREEN_MAIN);
+            }
+        }
+        FontTypeFace.setRobotoThinTypeFace(this,mTitle,text_date);
+        savefcmid();
 
+    }
+
+
+    private void savefcmid(){
+        try{
+            if(StringUtils.isEmpty(AppPreference.getInstance().getTokenValue())){
+                Intent i = new Intent(this, RegistrationIntentService.class);
+                startService(i);
+            }
+        }catch (Exception e){
 
         }
     }
@@ -97,13 +125,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void getData(String numberofdays){
        List<Datum> list= dao.getList(numberofdays);
         if(list.size()>0){
+            if(str!=null){
+                FabricEventTracker.getInstance().sendServiceEvent(Constants.FABRIC_EVENTS.EVENT_GET_SAVED_DATA_RESULT_SCREEN,ServiceConstants.GETDATA,list.size());
+
+            }else{
+                FabricEventTracker.getInstance().sendServiceEvent(Constants.FABRIC_EVENTS.EVENT_GET_SAVED_DATA_MAIN_SCREEN,ServiceConstants.GETDATA,list.size());
+
+            }
             setJobListAdapter(list);
         }
         else{
         if(checkInternet()) {
             RefrenceWrapper.getRefrenceWrapper(MainActivity.this).getmServiceCallHandler().getalldata(MainActivity.this, numberofdays, MainActivity.this);
+
         }
         else{
+            FabricEventTracker.getInstance().trackCustomEvents(Constants.FABRIC_EVENTS.NO_INTERNET);
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(Constants.CHECK_INTERNET)
                     .setCancelable(false)
@@ -232,17 +269,26 @@ private void selecteDate(){
     @Override
     public void onSuccess(XlsData data) {
         setJobListAdapter(data.getData());
+        if(str!=null) {
+            FabricEventTracker.getInstance().sendServiceEvent(Constants.FABRIC_EVENTS.EVENT_GET_DATA_MAIN_RESULT, ServiceConstants.GETDATA, data.getSize());
+        }else {
+            FabricEventTracker.getInstance().sendServiceEvent(Constants.FABRIC_EVENTS.EVENT_GET_DATA_MAIN_SCREEN, ServiceConstants.GETDATA, data.getSize());
+
+        }
     }
 
     @Override
     public void onFailure(String Message) {
-AlertUtils.getInstance().showToast(MainActivity.this,Message);
+        AlertUtils.getInstance().showToast(MainActivity.this,Message);
+        FabricEventTracker.getInstance().sendServiceEvent(Constants.FABRIC_EVENTS.EVENT_GET_API_FAIL_EVENT,ServiceConstants.GETDATA,Message);
+
     }
 
     @Override
     public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
         mSelectedDate=dayOfMonth+" "+(monthOfYear+1)+" "+year;
         getData(DateUtils.getNumberOfDays(mSelectedDate)+"");
+        FabricEventTracker.getInstance().trackCustomEvents(Constants.FABRIC_EVENTS.DATE_CLIKED);
     }
 
 

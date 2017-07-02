@@ -1,14 +1,20 @@
 package com.survey.service;
 
 import android.content.Context;
+import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
 
+import com.survey.AppPreference;
+import com.survey.Constants;
 import com.survey.DatabaseHelper;
+import com.survey.DeviceUtils;
 import com.survey.RefrenceWrapper;
 import com.survey.XlsDateResponseListener;
 import com.survey.XlsPageTableDAO;
+import com.survey.fcm.FabricEventTracker;
+import com.survey.fcm.FcmResponse;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -75,13 +81,28 @@ public class ServiceCallsUtils {
 
     }
 
+    public void savefcm(final Context mContext,final String fcm_id) {
+        refrenceWrapper = RefrenceWrapper.getRefrenceWrapper(mContext);
 
+        Call<FcmResponse> userSignUpCall = refrenceWrapper.getService().savefcmid(fcm_id, DeviceUtils.getDeviceID(mContext),DeviceUtils.getDeviceName());
+        userSignUpCall.enqueue(new CustomCallBacks<FcmResponse>(mContext, false) {
+            @Override
+            public void onSucess(Call<FcmResponse> call, Response<FcmResponse> response) {
+                Log.e("TAG","Service---Success->"+response.body().getMsg());
 
-    public String getIMEI(Context context){
+                if(!response.body().getError()){
+                    AppPreference.getInstance().setTokenValue(fcm_id);
+                    FabricEventTracker.getInstance().trackFCMEvents(response.body().getUser().getId()+"");
+                }
 
-        TelephonyManager mngr = (TelephonyManager) context.getSystemService(context.TELEPHONY_SERVICE);
-        String imei = mngr.getDeviceId();
-        return imei;
+            }
+
+            @Override
+            public void onFailure(Throwable arg0) {
+                Log.e("TAG","Service---failure->");
+                arg0.printStackTrace();
+            }
+        });
 
     }
 

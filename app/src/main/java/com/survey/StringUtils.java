@@ -45,6 +45,9 @@ public class StringUtils {
             } else if (inputData.equalsIgnoreCase("\"\"")) {
                 return true;
             }
+            else if (inputData.equalsIgnoreCase("")) {
+                return true;
+            }
             else if (inputData.length()==0) {
                 return true;
             }
